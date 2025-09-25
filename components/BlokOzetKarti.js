@@ -1,57 +1,14 @@
 // components/BlokOzetKarti.js
 import { useState, useEffect } from "react";
+import { useAidat } from "../hooks/useAidat";
 
 export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
-  const [aidatVerisi, setAidatVerisi] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // Mevcut period (örneğin 2024-01)
-  const getCurrentPeriod = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
-  };
+  const { aidatVerisi, loading, error, hesaplaAidat } = useAidat(blokHarfi);
 
   // Aidat hesapla
-  const hesaplaAidat = async () => {
-    if (!blokHarfi) return;
-
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/aidat/hesaplamali-detay", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          blokHarfi,
-          period: getCurrentPeriod(),
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setAidatVerisi(result.data);
-      } else {
-        setError(result.message || "Aidat hesaplanamadı");
-      }
-    } catch (err) {
-      console.error("Aidat hesaplama hatası:", err);
-      setError("Bu ay için henüz gider verisi girilmemiş");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Blok değiştiğinde aidat hesapla
   useEffect(() => {
     hesaplaAidat();
-  }, [blokHarfi]);
+  }, [hesaplaAidat]);
 
   const getBlokInfo = () => {
     if (!kompleksData?.bloklar) return {};

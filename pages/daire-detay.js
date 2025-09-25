@@ -1,64 +1,39 @@
 // pages/daire-detay.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import DaireDetayTablosu from "../components/DaireDetayTablosu";
 import { GiderDetayExportButton } from "@/components/ExcelExportButton";
+import { getCurrentPeriod } from "../utils/dateUtils";
+import BlokSelector from "../components/BlokSelector";
 
 export default function DaireDetaySayfasi() {
   const [selectedBlok, setSelectedBlok] = useState("A");
+  const [kompleksData, setKompleksData] = useState(null);
   const [period, setPeriod] = useState(getCurrentPeriod());
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetch("/api/kompleks/blok-listesi")
+      .then((res) => res.json())
+      .then((data) => {
+        setKompleksData(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Veri yükleme hatası:", err);
+        setLoading(false);
+      });
+  }, []);
 
-  function getCurrentPeriod() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Apartman verileri yükleniyor...</p>
+        </div>
+      </div>
+    );
   }
-
-  const bloklar = [
-    {
-      harf: "A",
-      ad: "A Blok",
-      tip: "3+1",
-      kazan: 1,
-      renk: "bg-blue-100 text-blue-800",
-    },
-    {
-      harf: "B",
-      ad: "B Blok",
-      tip: "3+1",
-      kazan: 1,
-      renk: "bg-blue-100 text-blue-800",
-    },
-    {
-      harf: "C",
-      ad: "C Blok",
-      tip: "2+1 Büyük",
-      kazan: 1,
-      renk: "bg-blue-100 text-blue-800",
-    },
-    {
-      harf: "D",
-      ad: "D Blok",
-      tip: "2+1",
-      kazan: 2,
-      renk: "bg-green-100 text-green-800",
-    },
-    {
-      harf: "E",
-      ad: "E Blok",
-      tip: "2+1",
-      kazan: 2,
-      renk: "bg-green-100 text-green-800",
-    },
-    {
-      harf: "F",
-      ad: "F Blok",
-      tip: "2+1",
-      kazan: 2,
-      renk: "bg-green-100 text-green-800",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -70,9 +45,6 @@ export default function DaireDetaySayfasi() {
               <h1 className="text-2xl font-bold text-gray-900">
                 🏠 Daire Bazlı Aidat Detayları
               </h1>
-              <p className="text-gray-600">
-                Her dairenin ayrı ayrı aidat hesaplamalarını görüntüleyin
-              </p>
             </div>
             <div className="flex items-center gap-4">
               <Link
@@ -90,43 +62,14 @@ export default function DaireDetaySayfasi() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Kontrol Paneli */}
         <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid  gap-6">
             {/* Blok Seçimi */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                🏗️ Blok Seçimi
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {bloklar.map((blok) => (
-                  <button
-                    key={blok.harf}
-                    onClick={() => setSelectedBlok(blok.harf)}
-                    className={`
-                      p-3 rounded-lg border-2 text-left transition-all
-                      ${
-                        selectedBlok === blok.harf
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }
-                    `}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-gray-900">
-                        {blok.harf}
-                      </span>
-                      {selectedBlok === blok.harf && (
-                        <span className="text-blue-500">✓</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-600">{blok.tip}</div>
-                    <div
-                      className={`inline-block px-2 py-0.5 rounded text-xs mt-1 ${blok.renk}`}
-                    >
-                      Kazan {blok.kazan}
-                    </div>
-                  </button>
-                ))}
-              </div>
+            <div className="mb-8">
+              <BlokSelector
+                selectedBlok={selectedBlok}
+                onBlokChange={setSelectedBlok}
+                kompleksData={kompleksData}
+              />
             </div>
 
             {/* Period Seçimi */}

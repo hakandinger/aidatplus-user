@@ -1,18 +1,12 @@
 // components/DaireDetayTablosu.js
 import { useState, useEffect } from "react";
+import { getCurrentPeriod } from "../utils/dateUtils";
 
 export default function DaireDetayTablosu({ blokHarfi, period }) {
   const [daireVerileri, setDaireVerileri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [secilenKat, setSecilenKat] = useState("tumkatlarda");
-
-  const getCurrentPeriod = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
-  };
 
   const hesaplaDaireAidatlari = async () => {
     if (!blokHarfi) return;

@@ -15,7 +15,7 @@ export default function GenelAciklamalarContainer() {
         const json = await res.json();
 
         if (json.success) {
-          setGenelAciklamalar(json.data); // API'deki açıklamalar
+          setGenelAciklamalar(json.data);
         } else {
           setError(data.message || "Açıklama yüklenemedi");
         }

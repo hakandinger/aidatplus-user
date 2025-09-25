@@ -1,5 +1,6 @@
 // components/ExcelExportButton.js
 import { useState, useEffect } from "react";
+import { getCurrentPeriod } from "../utils/dateUtils";
 
 export default function ExcelExportButton({
   raporTuru,
@@ -12,13 +13,6 @@ export default function ExcelExportButton({
   const [error, setError] = useState("");
   const [hasData, setHasData] = useState(true);
   const [checking, setChecking] = useState(false);
-
-  const getCurrentPeriod = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    return `${year}-${month}`;
-  };
 
   useEffect(() => {
     if (period && raporTuru === "gider_detay") {
