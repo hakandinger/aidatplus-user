@@ -1,5 +1,6 @@
 // pages/api/rapor/excel-export.js
 import { getDb } from "../../../lib/mongodb";
+import { baseUrl } from "@/lib/config";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -53,7 +54,6 @@ export default async function handler(req, res) {
         });
     }
 
-    // CSV formatında döndür (Excel için)
     const csvContent = convertToCSV(excelData, genelAciklamalar);
 
     res.status(200).json({
@@ -79,19 +79,12 @@ export default async function handler(req, res) {
   }
 }
 
-// Daire detay raporu
 async function generateDaireDetayExcel(db, blokHarfi, period) {
-  // Önce aidat hesapla
-  const response = await fetch(
-    `${
-      process.env.NEXTAUTH_URL || "http://localhost:3000"
-    }/api/aidat/daire-hesapla`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ blokHarfi, period }),
-    }
-  );
+  const response = await fetch(`${baseUrl}/api/aidat/daire-hesapla`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ blokHarfi, period }),
+  });
 
   if (!response.ok) {
     throw new Error("Daire aidatları hesaplanamadı");
@@ -122,11 +115,10 @@ async function generateDaireDetayExcel(db, blokHarfi, period) {
 
   return {
     data: excelData,
-    baslik: `${blokHarfi} Bloku Daire Detay Raporu - ${period}`,
+    baslik: `${blokHarfi} Bloğu Daire Detay Raporu - ${period}`,
   };
 }
 
-// Blok özeti raporu
 async function generateBlokOzetiExcel(db, period) {
   const kompleksCollection = db.collection("kompleks_yapisi");
   const bloklar = await kompleksCollection
@@ -137,17 +129,11 @@ async function generateBlokOzetiExcel(db, period) {
   const excelData = [];
 
   for (const blok of bloklar) {
-    // Her blok için aidat hesapla
-    const response = await fetch(
-      `${
-        process.env.NEXTAUTH_URL || "http://localhost:3000"
-      }/api/aidat/hesapla`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blokHarfi: blok.blokHarfi, period }),
-      }
-    );
+    const response = await fetch(`${baseUrl}/api/aidat/hesapla`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ blokHarfi: blok.blokHarfi, period }),
+    });
 
     if (response.ok) {
       const result = await response.json();
@@ -177,13 +163,7 @@ async function generateBlokOzetiExcel(db, period) {
   };
 }
 
-// Gider detay raporu
-async function generateGiderDetayExcel(
-  db,
-  period,
-  blokHarfi,
-  genelAciklamalar
-) {
+async function generateGiderDetayExcel(db, period, blokHarfi) {
   const giderCollection = db.collection("daire_detay_aidat_cache");
   const filter = {};
   if (blokHarfi) filter.blokHarfi = blokHarfi;
@@ -193,49 +173,56 @@ async function generateGiderDetayExcel(
 
   if (!giderInfo) {
     throw new Error(
-      `${period} Dönemi ${blokHarfi} Bloğu için gider bilgisi bulunamadı`
+      `${period} Dönemi ${
+        blokHarfi || "Tüm Bloklar"
+      } için gider bilgisi bulunamadı`
     );
   }
 
   const excelData = giderInfo.giderDetayTablosu.map((gider) => ({
     "Gider Türü": gider.giderTuru,
-    "Açıklama ": gider.aciklama || "",
+    Açıklama: gider.aciklama || "",
     "Tutar (₺)": gider.toplamTutar || 0,
-    "Daire Payı (₺)": gider.dairePayi || 0,
+    "Daire Payı (₺)": (gider.dairePayi || 0).toFixed(2),
     "Aidat Dönemi": period,
   }));
 
-  const response = await fetch(
-    `${
-      process.env.NEXTAUTH_URL || "http://localhost:3000"
-    }/api/aciklama/genel-aciklama`,
-    {
+  let aciklamaRows = [];
+  try {
+    const response = await fetch(`${baseUrl}/api/aciklama/genel-aciklama`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
-    }
-  );
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  const result = await response.json();
-  if (!result.success) {
-    throw new Error(result.message);
+    if (response.ok) {
+      const result = await response.json();
+
+      if (result.success && Array.isArray(result.data)) {
+        aciklamaRows = result.data.map((item) => ({
+          baslik: item.baslik || "",
+          aciklama: item.aciklama || "",
+          oncelik: item.oncelik || "",
+          tarih: item.tarih
+            ? new Date(item.tarih).toLocaleDateString("tr-TR")
+            : "",
+        }));
+      }
+    } else {
+      console.warn("Genel açıklama API hatası:", response.status);
+    }
+  } catch (error) {
+    console.error("Genel açıklama fetch hatası:", error);
   }
 
-  const aciklamaRows = result.data.map((item) => ({
-    baslik: item.baslik || "",
-    aciklama: item.aciklama || "",
-    oncelik: item.oncelik || "",
-    tarih: item.tarih ? new Date(item.tarih).toLocaleDateString("tr-TR") : "",
-  }));
-
-  // 3️⃣ Döndür
   return {
     data: excelData,
-    baslik: `${period} Dönemi ${blokHarfi} Bloğu Gider Detay Raporu`,
-    genelAciklamalar: aciklamaRows, // ✅ buradan frontend'de CSV veya tabloya ekleyebilirsin
+    baslik: `${period} Dönemi ${blokHarfi || "Tüm Bloklar"} Gider Detay Raporu`,
+    genelAciklamalar: aciklamaRows,
   };
 }
 
-// CSV formatına çevirme
 function convertToCSV(data, genelAciklamalar) {
   if (!data || data.length === 0) {
     return "";
@@ -259,27 +246,21 @@ function convertToCSV(data, genelAciklamalar) {
       .join(",")
   );
 
-  let csvContent = [csvHeaders, ...csvRows].join("\n"); // 1️⃣ İlk tablo
+  let csvContent = [csvHeaders, ...csvRows].join("\n");
 
-  // 2️⃣ Genel açıklamalar
   if (genelAciklamalar && genelAciklamalar.length > 0) {
-    csvContent += "\n\n"; // tablo arasına boşluk
-    csvContent += ["Genel Açıklamalar"].join(",") + "\n"; // başlık satırı
-    csvContent += "Başlık,Açıklama,Öncelik,Tarih\n"; // kolon başlıkları
+    csvContent += "\n\n";
+    csvContent += "\n\n";
+    csvContent += `"",Açıklama,""\n`; // tek kolon
 
-    const aciklamaCsvRows = genelAciklamalar.map((row) =>
-      [row.baslik, row.aciklama, row.oncelik, row.tarih]
-        .map((cell) => {
-          if (
-            typeof cell === "string" &&
-            (cell.includes(",") || cell.includes('"') || cell.includes("\n"))
-          ) {
-            return `"${cell.replace(/"/g, '""')}"`;
-          }
-          return cell;
-        })
-        .join(",")
-    );
+    const aciklamaCsvRows = genelAciklamalar.map((row) => {
+      let text = row.aciklama || "";
+      // Eğer metin içinde virgül, yeni satır veya tırnak varsa güvenli şekilde ekle
+      if (text.includes(",") || text.includes('"') || text.includes("\n")) {
+        text = `"${text.replace(/"/g, '""')}"`;
+      }
+      return ["", text, "", ""].join(",");
+    });
 
     csvContent += aciklamaCsvRows.join("\n");
   }

@@ -114,7 +114,7 @@ export default function DaireDetayTablosu({ blokHarfi, period }) {
             <select
               value={secilenKat}
               onChange={(e) => setSecilenKat(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+              className="border border-gray-300 text-black rounded-lg px-3 py-2 text-sm focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="tumkatlarda">Tüm Katlar</option>
               {katlar.map((kat) => (

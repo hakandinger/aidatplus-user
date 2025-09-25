@@ -18,42 +18,42 @@ export default function DaireDetaySayfasi() {
   const bloklar = [
     {
       harf: "A",
-      ad: "A Bloku",
+      ad: "A Blok",
       tip: "3+1",
       kazan: 1,
       renk: "bg-blue-100 text-blue-800",
     },
     {
       harf: "B",
-      ad: "B Bloku",
+      ad: "B Blok",
       tip: "3+1",
       kazan: 1,
       renk: "bg-blue-100 text-blue-800",
     },
     {
       harf: "C",
-      ad: "C Bloku",
+      ad: "C Blok",
       tip: "2+1 Büyük",
       kazan: 1,
       renk: "bg-blue-100 text-blue-800",
     },
     {
       harf: "D",
-      ad: "D Bloku",
+      ad: "D Blok",
       tip: "2+1",
       kazan: 2,
       renk: "bg-green-100 text-green-800",
     },
     {
       harf: "E",
-      ad: "E Bloku",
+      ad: "E Blok",
       tip: "2+1",
       kazan: 2,
       renk: "bg-green-100 text-green-800",
     },
     {
       harf: "F",
-      ad: "F Bloku",
+      ad: "F Blok",
       tip: "2+1",
       kazan: 2,
       renk: "bg-green-100 text-green-800",
@@ -141,7 +141,7 @@ export default function DaireDetaySayfasi() {
                     type="month"
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                   />
 
                   {/* Hızlı Seçim Butonları */}
@@ -183,7 +183,7 @@ export default function DaireDetaySayfasi() {
               <div>
                 <span className="text-sm text-gray-600">Seçilen:</span>
                 <span className="ml-2 font-medium text-gray-900">
-                  {selectedBlok} Bloku • {period}
+                  {selectedBlok} Blok • {period}
                 </span>
               </div>
               <div className="text-right">
@@ -210,7 +210,7 @@ export default function DaireDetaySayfasi() {
               <ul className="space-y-1 text-blue-700">
                 <li>• Zemin kat daireleri asansör payı ödemez</li>
                 <li>• Üst kat daireleri blok asansör giderini paylaşır</li>
-                <li>• Her blokun asansör gideri ayrı hesaplanır</li>
+                <li>• Her bloğun asansör gideri ayrı hesaplanır</li>
               </ul>
             </div>
             <div>

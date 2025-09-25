@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     if (daireler.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `${blokHarfi} bloku${
+        message: `${blokHarfi} blok${
           daireNo ? ` ${daireNo} numaralı daire` : ""
         } bulunamadı`,
       });
@@ -346,10 +346,10 @@ async function hesaplaDaireAidati(
     toplamKompleksMetrekaresi > 0 ? metrekare / toplamKompleksMetrekaresi : 0;
 
   // 5. EK GİDERLER (aktif daire sayısına eşit)
-  const ekGiderlerToplam = (giderInfo.ekGiderler || []).reduce(
-    (t, g) => t + (g.tutar || 0),
-    0
-  );
+  const ekGiderlerToplam = (giderInfo.ekGiderler || []).reduce((t, g) => {
+    const tutar = parseFloat(g.tutar) || 0; // string veya null güvenliği
+    return t + tutar;
+  }, 0);
   const ekGiderPayi = ekGiderlerToplam / toplamDaireSayisi;
 
   // 6. TOPLAM AIDAT

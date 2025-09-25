@@ -60,7 +60,6 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
 
   const blokInfo = getBlokInfo();
 
-  // Örnek bir daire seç (örneğin ilk daire)
   const ornekDaire = aidatVerisi?.daireAidatlari?.[5];
 
   return (
@@ -161,67 +160,71 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
                   </h4>
 
                   <div className="overflow-x-auto">
-                    <table className="min-w-full border border-gray-300 rounded-lg bg-white text-sm">
+                    <table className="min-w-full  rounded-lg bg-white text-sm">
                       <thead className="bg-gray-100">
                         <tr>
-                          <th className="px-3 py-2 border text-left font-medium text-gray-700">
+                          <th className="px-3 py-2  text-left font-medium text-gray-700">
                             Gider
                           </th>
-                          <th className="px-3 py-2 border text-right font-medium text-gray-700">
+                          <th className="px-3 py-2  text-right font-medium text-gray-700">
                             Toplam
                           </th>
-                          <th className="px-3 py-2 border text-right font-medium text-gray-700">
+                          <th className="px-3 py-2  text-right font-medium text-gray-700">
                             Daire Payı
                           </th>
-                          <th className="px-3 py-2 border text-center font-medium text-gray-700">
+                          <th className="px-3 py-2  text-center font-medium text-gray-700">
                             Pay Tipi
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        {aidatVerisi.giderDetayTablosu.map((gider, index) => (
-                          <tr key={index} className="hover:bg-gray-50">
-                            <td className="px-3 py-2 border">
-                              <div>
-                                <div className="font-medium text-gray-900">
-                                  {gider.giderTuru}
-                                </div>
-                                {gider.aciklama && (
-                                  <div
-                                    className="text-xs text-gray-500 truncate"
-                                    title={gider.aciklama}
-                                  >
-                                    {gider.aciklama}
+                        {aidatVerisi.giderDetayTablosu
+                          .filter((gider) => (gider.toplamTutar || 0) > 0)
+                          .map((gider, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                              <td className="px-3 py-2 ">
+                                <div>
+                                  <div className="font-medium text-gray-900">
+                                    {gider.giderTuru}
                                   </div>
+                                  {gider.aciklama && (
+                                    <div
+                                      className="text-xs text-gray-500 truncate"
+                                      title={gider.aciklama}
+                                    >
+                                      {gider.aciklama}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2  text-right font-medium text-gray-900">
+                                ₺
+                                {(gider.toplamTutar || 0).toLocaleString(
+                                  "tr-TR"
                                 )}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 border text-right font-medium text-gray-900">
-                              ₺
-                              {(gider.toplamTutar || 0).toLocaleString("tr-TR")}
-                            </td>
-                            <td className="px-3 py-2 border text-right font-medium text-gray-900">
-                              ₺{(gider.dairePayi || 0).toFixed(2)}
-                            </td>
-                            <td className="px-3 py-2 border text-center">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  gider.payTipi === "Eşit Pay"
-                                    ? "bg-green-100 text-green-800"
-                                    : gider.payTipi === "Metrekare"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : gider.payTipi === "Petek Ölçüsü"
-                                    ? "bg-orange-100 text-orange-800"
-                                    : gider.payTipi === "Kullanan Daire"
-                                    ? "bg-purple-100 text-purple-800"
-                                    : "bg-gray-100 text-gray-800"
-                                }`}
-                              >
-                                {gider.payTipi}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="px-3 py-2  text-right font-medium text-gray-900">
+                                ₺{(gider.dairePayi || 0).toFixed(2)}
+                              </td>
+                              <td className="px-3 py-2  text-center">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    gider.payTipi === "Eşit Pay"
+                                      ? "bg-green-100 text-green-800"
+                                      : gider.payTipi === "Metrekare"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : gider.payTipi === "Petek Ölçüsü"
+                                      ? "bg-orange-100 text-orange-800"
+                                      : gider.payTipi === "Kullanan Daire"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : "bg-gray-100 text-gray-800"
+                                  }`}
+                                >
+                                  {gider.payTipi}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>
@@ -260,9 +263,7 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
                   <span className="text-gray-600">Ortalama Aidat:</span>
                   <p className="font-bold text-gray-900">
                     ₺
-                    {(aidatVerisi.blokOzeti?.ortalamaDaireAidati || 0).toFixed(
-                      0
-                    )}
+                    {aidatVerisi.blokOzeti?.ortalamaDaireAidati.toFixed(2) || 0}
                   </p>
                 </div>
                 <div>
