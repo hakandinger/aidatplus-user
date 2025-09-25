@@ -120,7 +120,7 @@ export default async function handler(req, res) {
         hesaplamaTarihi: new Date(),
         daireAidatlari,
         blokOzeti,
-        giderDetayTablosu, // ← BUNU EKLEYİN
+        giderDetayTablosu,
       },
       { upsert: true }
     );
@@ -131,7 +131,7 @@ export default async function handler(req, res) {
       data: {
         blokOzeti,
         daireAidatlari,
-        giderDetayTablosu, // ← BUNU EKLEYİN
+        giderDetayTablosu,
         toplam: {
           daireSayisi: daireAidatlari.length,
           toplamAidat: blokOzeti.toplamAidat,
@@ -213,22 +213,22 @@ async function olusturGiderDetayTablosu(
   giderDetayTablosu.push({
     giderTuru: "Güvenlik",
     aciklama:
-      giderInfo.giderAciklamalari?.guvenlik ||
+      giderInfo.giderAciklamalari?.guvenlikPersonelGideri ||
       "Güvenlik personeli ve ekipman giderleri",
-    toplamTutar: giderInfo.guvenlikGideri || 0,
-    dairePayi: (giderInfo.guvenlikGideri || 0) / 178,
+    toplamTutar: giderInfo.guvenlikPersonelGideri || 0,
+    dairePayi: (giderInfo.guvenlikPersonelGideri || 0) / 178,
     payTipi: "Eşit Pay",
     giderTipi: "sabit",
   });
 
-  // 5. Temizlik
+  // 5. Bina Görevlileri
   giderDetayTablosu.push({
-    giderTuru: "Temizlik",
+    giderTuru: "Bina Görevlileri",
     aciklama:
-      giderInfo.giderAciklamalari?.temizlik ||
-      "Temizlik personeli ve malzeme giderleri",
-    toplamTutar: giderInfo.temizlikGideri || 0,
-    dairePayi: (giderInfo.temizlikGideri || 0) / 178,
+      giderInfo.giderAciklamalari?.binagorevliGideri ||
+      "Bina Görevlileri Maaşı",
+    toplamTutar: giderInfo.binagorevliGideri || 0,
+    dairePayi: (giderInfo.binagorevliGideri || 0) / 178,
     payTipi: "Eşit Pay",
     giderTipi: "sabit",
   });
@@ -242,9 +242,9 @@ async function olusturGiderDetayTablosu(
     aciklama:
       giderInfo.giderAciklamalari?.elektrik || "Ortak alan elektrik giderleri",
     toplamTutar: giderInfo.elektrikGideri || 0,
-    dairePayi: (giderInfo.elektrikGideri || 0) * daireMetrekarePay,
-    payTipi: "Metrekare",
-    giderTipi: "metrekare",
+    dairePayi: (giderInfo.elektrikGideri || 0) / 178,
+    payTipi: "Eşit Pay",
+    giderTipi: "sabit",
   });
 
   // 7. Su
@@ -252,21 +252,20 @@ async function olusturGiderDetayTablosu(
     giderTuru: "Su",
     aciklama: giderInfo.giderAciklamalari?.su || "Ortak alan su giderleri",
     toplamTutar: giderInfo.suGideri || 0,
-    dairePayi: (giderInfo.suGideri || 0) * daireMetrekarePay,
-    payTipi: "Metrekare",
-    giderTipi: "metrekare",
+    dairePayi: (giderInfo.suGideri || 0) / 178,
+    payTipi: "Eşit Pay",
+    giderTipi: "sabit",
   });
 
-  // 8. Masraflar
+  // 8. Yönetim
   giderDetayTablosu.push({
-    giderTuru: "Masraflar",
+    giderTuru: "Yönetim",
     aciklama:
-      giderInfo.giderAciklamalari?.masraflar ||
-      "Bakım-onarım ve çeşitli masraflar",
-    toplamTutar: giderInfo.masraflar || 0,
-    dairePayi: (giderInfo.masraflar || 0) * daireMetrekarePay,
-    payTipi: "Metrekare",
-    giderTipi: "metrekare",
+      giderInfo.giderAciklamalari?.yonetimGideri || "Yönetim Hizmet Bedeli",
+    toplamTutar: giderInfo.yonetimGideri || 0,
+    dairePayi: (giderInfo.yonetimGideri || 0) / 178,
+    payTipi: "Eşit Pay",
+    giderTipi: "sabit",
   });
 
   // 9. Ek Giderler
@@ -299,9 +298,7 @@ function hesaplaDogazPayi(toplamTutar, daire, tumDaireler, kazanGrubu) {
   }
   return 0;
 }
-// Tek daire için aidat hesaplama fonksiyonu
-// Tek daire için aidat hesaplama fonksiyonu (düzeltilmiş)
-// Tek daire için aidat hesaplama fonksiyonu (düzeltilmiş)
+
 async function hesaplaDaireAidati(
   daire,
   giderInfo,
@@ -336,15 +333,17 @@ async function hesaplaDaireAidati(
   }
 
   // 3. SABİT PAYLAR (aktif daire sayısına eşit)
-  const guvenlikPayi = (giderInfo.guvenlikGideri || 0) / toplamDaireSayisi;
-  const temizlikPayi = (giderInfo.temizlikGideri || 0) / toplamDaireSayisi;
+  const guvenlikPayi =
+    (giderInfo.guvenlikPersonelGideri || 0) / toplamDaireSayisi;
+  const yonetimPayi = (giderInfo.yonetimGideri || 0) / toplamDaireSayisi;
 
-  // 4. METREKARE BAZLI PAYLAR
+  const gorevliPayi = (giderInfo.binagorevliGideri || 0) / toplamDaireSayisi;
+  const elektrikPayi = (giderInfo.elektrikGideri || 0) / toplamDaireSayisi;
+  const suPayi = (giderInfo.suGideri || 0) / toplamDaireSayisi;
+
+  // 4. METREKARE BAZLI HESAP
   const daireMetrekarePay =
     toplamKompleksMetrekaresi > 0 ? metrekare / toplamKompleksMetrekaresi : 0;
-  const elektrikPayi = (giderInfo.elektrikGideri || 0) * daireMetrekarePay;
-  const suPayi = (giderInfo.suGideri || 0) * daireMetrekarePay;
-  const masrafPayi = (giderInfo.masraflar || 0) * daireMetrekarePay;
 
   // 5. EK GİDERLER (aktif daire sayısına eşit)
   const ekGiderlerToplam = (giderInfo.ekGiderler || []).reduce(
@@ -358,20 +357,20 @@ async function hesaplaDaireAidati(
     asansorPayi +
     dogazPayi +
     guvenlikPayi +
-    temizlikPayi +
+    gorevliPayi +
     elektrikPayi +
     suPayi +
-    masrafPayi +
+    yonetimPayi +
     ekGiderPayi;
 
   return {
     asansorPayi: parseFloat(asansorPayi.toFixed(2)),
     dogazPayi: parseFloat(dogazPayi.toFixed(2)),
     guvenlikPayi: parseFloat(guvenlikPayi.toFixed(2)),
-    temizlikPayi: parseFloat(temizlikPayi.toFixed(2)),
+    gorevliPayi: parseFloat(gorevliPayi.toFixed(2)),
     elektrikPayi: parseFloat(elektrikPayi.toFixed(2)),
     suPayi: parseFloat(suPayi.toFixed(2)),
-    masrafPayi: parseFloat(masrafPayi.toFixed(2)),
+    yonetimPayi: parseFloat(yonetimPayi.toFixed(2)),
     ekGiderPayi: parseFloat(ekGiderPayi.toFixed(2)),
     toplamAidat: parseFloat(toplamAidat.toFixed(2)),
 

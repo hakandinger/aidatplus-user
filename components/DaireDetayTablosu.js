@@ -75,20 +75,6 @@ export default function DaireDetayTablosu({ blokHarfi, period }) {
             Veri Bulunamadı
           </h3>
           <p className="text-gray-600 mb-4">{error}</p>
-          <div className="space-x-3">
-            <button
-              onClick={() => (window.location.href = "/gider")}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Gider Girişi Yap
-            </button>
-            <button
-              onClick={() => (window.location.href = "/api/hizli-setup")}
-              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-            >
-              Daire Yapısını Kur
-            </button>
-          </div>
         </div>
       </div>
     );
@@ -187,10 +173,10 @@ export default function DaireDetayTablosu({ blokHarfi, period }) {
                 Doğalgaz
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Güvenlik
+                Personel Maaşı
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Temizlik
+                Yönetim
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Diğer
@@ -206,8 +192,9 @@ export default function DaireDetayTablosu({ blokHarfi, period }) {
               const digerGiderler =
                 aidatDetayi.elektrikPayi +
                 aidatDetayi.suPayi +
-                aidatDetayi.masrafPayi;
-
+                aidatDetayi.ekGiderPayi;
+              const personelGiderleri =
+                aidatDetayi.guvenlikPayi + aidatDetayi.gorevliPayi;
               return (
                 <tr
                   key={daireBilgileri.globalDaireId}
@@ -263,10 +250,10 @@ export default function DaireDetayTablosu({ blokHarfi, period }) {
                     ₺{aidatDetayi.dogazPayi.toLocaleString("tr-TR")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₺{aidatDetayi.guvenlikPayi.toLocaleString("tr-TR")}
+                    ₺{personelGiderleri.toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ₺{aidatDetayi.temizlikPayi.toLocaleString("tr-TR")}
+                    ₺{aidatDetayi.yonetimPayi.toLocaleString("tr-TR")}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     ₺{digerGiderler.toFixed(2)}

@@ -95,7 +95,7 @@ export default function BlokSelector({
       {selectedBlok && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <h3 className="font-medium text-gray-900 mb-2">
-            {selectedBlok} Bloku Detayları
+            {selectedBlok} Blok Detayları
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
