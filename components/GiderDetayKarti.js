@@ -149,12 +149,6 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
               ⚠️ Henüz Gider Verisi Yok
             </h4>
             <p className="text-sm text-yellow-600 mb-3">{error}</p>
-            <button
-              onClick={() => (window.location.href = "/gider")}
-              className="text-sm bg-yellow-600 text-white px-3 py-1 rounded-lg hover:bg-yellow-700"
-            >
-              Gider Girişi Yap
-            </button>
           </div>
         ) : aidatVerisi ? (
           <table className="min-w-full border border-gray-300 rounded-lg mt-4">
@@ -194,12 +188,6 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
             <p className="text-sm text-blue-600 mb-3">
               Gerçek aidat hesaplaması için önce gider verilerini girin.
             </p>
-            <button
-              onClick={() => (window.location.href = "/gider")}
-              className="text-sm bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700"
-            >
-              📝 Gider Girişi Yap
-            </button>
           </div>
         )}
       </div>
