@@ -240,43 +240,6 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
                   </div>
                 </div>
               )}
-
-            {/* Blok Özeti */}
-            <div className="bg-purple-50 rounded-lg p-4">
-              <h4 className="font-medium text-purple-700 mb-3">
-                🏢 {blokHarfi} Blok Toplam Özeti
-              </h4>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-gray-600">Toplam Daire:</span>
-                  <p className="font-bold text-gray-900">
-                    {aidatVerisi.blokOzeti?.toplamDaireSayisi || 0}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600">Ortalama Aidat:</span>
-                  <p className="font-bold text-gray-900">
-                    ₺
-                    {aidatVerisi.blokOzeti?.ortalamaDaireAidati.toFixed(2) || 0}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600">Blok Toplam:</span>
-                  <p className="font-bold text-gray-900">
-                    ₺
-                    {(aidatVerisi.blokOzeti?.toplamAidat || 0).toLocaleString(
-                      "tr-TR"
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <span className="text-gray-600">Zemin Kat:</span>
-                  <p className="font-bold text-gray-900">
-                    {aidatVerisi.blokOzeti?.zeminKatDaireSayisi || 0} daire
-                  </p>
-                </div>
-              </div>
-            </div>
           </>
         ) : (
           // Gider verisi yok

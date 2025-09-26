@@ -5,6 +5,8 @@ import BlokSelector from "../components/BlokSelector";
 import BlokOzetKarti from "../components/BlokOzetKarti";
 import GenelAciklamalarContainer from "@/components/GenelAciklamaContainer";
 
+import UserRegistrationModal from "../components/UserRegistrationModal";
+
 export default function Dashboard() {
   const [selectedBlok, setSelectedBlok] = useState("A");
   const [kompleksData, setKompleksData] = useState(null);
@@ -43,7 +45,7 @@ export default function Dashboard() {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-xl font-bold text-gray-900">
-                🏢 Zanamilanocity Apartman Yönetim Sistemi
+                🏢 Apartman Yönetim Sistemi
               </h1>
               <p className="text-gray-600">
                 178 Daire • 6 Blok • 2 Kazan Sistemi
@@ -78,6 +80,7 @@ export default function Dashboard() {
         </div>
 
         <GenelAciklamalarContainer />
+        <UserRegistrationModal />
       </div>
     </div>
   );
