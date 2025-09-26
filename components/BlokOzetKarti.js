@@ -118,19 +118,28 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
 
                   <div className="overflow-x-auto">
                     <table className="min-w-full  rounded-lg bg-white text-sm">
-                      <thead className="bg-gray-100">
+                      <thead className="bg-gray-50 hidden md:table-header-group">
                         <tr>
-                          <th className="px-3 py-2  text-left font-medium text-gray-700">
-                            Gider
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Gider Türü
                           </th>
-                          <th className="px-3 py-2  text-right font-medium text-gray-700">
-                            Toplam
+                          <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Toplam Tutar
                           </th>
-                          <th className="px-3 py-2  text-right font-medium text-gray-700">
+                          <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Daire Payı
                           </th>
-                          <th className="px-3 py-2  text-center font-medium text-gray-700">
+                          <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Pay Tipi
+                          </th>
+                        </tr>
+                      </thead>
+
+                      {/* Mobil başlık */}
+                      <thead className="bg-gray-50 md:hidden">
+                        <tr>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Gider Detayları
                           </th>
                         </tr>
                       </thead>
@@ -139,7 +148,35 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
                           .filter((gider) => (gider.toplamTutar || 0) > 0)
                           .map((gider, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-3 py-2 ">
+                              {/* Mobil görünüm */}
+                              <td className="px-3 py-2 block md:hidden">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <div className="font-medium text-gray-900">
+                                      {gider.giderTuru}
+                                    </div>
+                                    {gider.aciklama && (
+                                      <div className="text-xs text-gray-500 mt-1">
+                                        {gider.aciklama}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="text-right ml-4">
+                                    <div className="font-medium text-gray-900">
+                                      ₺{(gider.dairePayi || 0).toFixed(2)}
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">
+                                      Toplam: ₺
+                                      {(gider.toplamTutar || 0).toLocaleString(
+                                        "tr-TR"
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Desktop görünüm */}
+                              <td className="px-3 py-2 hidden md:table-cell">
                                 <div>
                                   <div className="font-medium text-gray-900">
                                     {gider.giderTuru}
@@ -154,16 +191,16 @@ export default function BlokOzetKarti({ blokHarfi, kompleksData }) {
                                   )}
                                 </div>
                               </td>
-                              <td className="px-3 py-2  text-right font-medium text-gray-900">
+                              <td className="px-3 py-2 text-right font-medium text-gray-900 hidden md:table-cell">
                                 ₺
                                 {(gider.toplamTutar || 0).toLocaleString(
                                   "tr-TR"
                                 )}
                               </td>
-                              <td className="px-3 py-2  text-right font-medium text-gray-900">
+                              <td className="px-3 py-2 text-right font-medium text-gray-900 hidden md:table-cell">
                                 ₺{(gider.dairePayi || 0).toFixed(2)}
                               </td>
-                              <td className="px-3 py-2  text-center">
+                              <td className="px-3 py-2 text-center hidden md:table-cell">
                                 <span
                                   className={`px-2 py-1 rounded-full text-xs font-medium ${
                                     gider.payTipi === "Eşit Pay"
