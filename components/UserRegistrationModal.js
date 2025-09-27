@@ -1,4 +1,4 @@
-// components/UserRegistrationModal.jsx
+// components/UserRegistrationModal.jsx - Fixed Version
 import React, { useState, useEffect, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
@@ -17,60 +17,149 @@ export default function UserRegistrationModal() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [hasShown, setHasShown] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
+  // Mobil detection
   useEffect(() => {
-    const modalShown = localStorage.getItem("registrationModalShown");
-    if (modalShown) {
-      setHasShown(true);
+    const checkMobile = () => {
+      const mobile =
+        window.innerWidth < 768 ||
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
+      setIsMobile(mobile);
+      console.log("📱 Is Mobile:", mobile);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Modal trigger logic - FİX EDİLDİ
+  useEffect(() => {
+    const checkModalShown = () => {
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          const shown = localStorage.getItem("registrationModalShown");
+
+          // Eğer timestamp varsa, kontrol et
+          if (shown && shown !== "true") {
+            const timestamp = parseInt(shown);
+            const now = new Date().getTime();
+            return now < timestamp; // Henüz zamanı gelmemişse true döner
+          }
+
+          return shown === "true";
+        }
+        return false;
+      } catch (error) {
+        console.log("LocalStorage not available");
+        return false;
+      }
+    };
+
+    const setModalShown = () => {
+      try {
+        if (typeof window !== "undefined" && window.localStorage) {
+          localStorage.setItem("registrationModalShown", "true");
+        }
+      } catch (error) {
+        console.log("Cannot set localStorage");
+      }
+    };
+
+    if (checkModalShown()) {
+      console.log("📝 Modal already shown or not time yet");
       return;
     }
 
-    let scrollTriggered = true;
+    // FİX: false olarak başlat
+    let scrollTriggered = false;
     let timeTriggered = false;
+    let touchTriggered = false;
 
+    // Scroll handler
     const handleScroll = () => {
-      if (!scrollTriggered && window.scrollY > window.innerHeight * 0.4) {
+      if (scrollTriggered || touchTriggered) return;
+
+      const scrolled = window.pageYOffset;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+
+      const scrollPercentage = scrolled / (documentHeight - windowHeight);
+      const threshold = isMobile ? 0.15 : 0.3; // Mobilde %15, masaüstünde %30
+
+      console.log("📜 Scroll %:", Math.round(scrollPercentage * 100));
+
+      if (scrollPercentage > threshold) {
         scrollTriggered = true;
+        console.log("📜 Scroll triggered modal");
         setIsOpen(true);
-        setHasShown(true);
-        localStorage.setItem("registrationModalShown", "true");
-        window.removeEventListener("scroll", handleScroll);
+        setModalShown();
+        cleanup();
       }
     };
 
-    const timer = setTimeout(() => {
-      if (!timeTriggered && !scrollTriggered) {
-        timeTriggered = true;
-        setIsOpen(true);
-        setHasShown(true);
-        localStorage.setItem("registrationModalShown", "true");
-      }
-    }, 15000);
+    // FİX: Touch handler tanımlandı
+    const handleTouchMove = () => {
+      if (!isMobile || touchTriggered || scrollTriggered) return;
 
-    const handleMouseLeave = (e) => {
-      if (e.clientY <= 0 && !hasShown) {
+      const scrolled = window.pageYOffset;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollPercentage = scrolled / (documentHeight - windowHeight);
+
+      if (scrollPercentage > 0.15) {
+        touchTriggered = true;
+        console.log("👆 Touch triggered modal");
         setIsOpen(true);
-        setHasShown(true);
-        localStorage.setItem("registrationModalShown", "true");
+        setModalShown();
+        cleanup();
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    document.addEventListener("mouseleave", handleMouseLeave);
+    // Time-based trigger
+    const timer = setTimeout(
+      () => {
+        if (!timeTriggered && !scrollTriggered && !touchTriggered) {
+          timeTriggered = true;
+          console.log("⏰ Time triggered modal");
+          setIsOpen(true);
+          setModalShown();
+        }
+      },
+      isMobile ? 8000 : 12000 // Mobilde 8sn, masaüstünde 12sn
+    );
 
-    return () => {
-      clearTimeout(timer);
+    const cleanup = () => {
       window.removeEventListener("scroll", handleScroll);
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("touchmove", handleTouchMove);
+      clearTimeout(timer);
     };
-  }, [hasShown]);
+
+    // Event listeners
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    if (isMobile) {
+      window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    }
+
+    console.log(
+      `🚀 Modal triggers activated. Mobile: ${isMobile}, Timer: ${
+        isMobile ? 8 : 12
+      }s`
+    );
+
+    return cleanup;
+  }, [isMobile]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      console.log("📤 Submitting form:", formData);
+
       const response = await fetch("/api/register-user", {
         method: "POST",
         headers: {
@@ -79,9 +168,13 @@ export default function UserRegistrationModal() {
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
+      const result = await response.json();
+      console.log("📥 API Response:", result);
+
+      if (response.ok && result.success) {
         setSubmitted(true);
 
+        // Google Analytics
         if (typeof gtag !== "undefined") {
           gtag("event", "user_registration", {
             event_category: "engagement",
@@ -93,11 +186,11 @@ export default function UserRegistrationModal() {
           setIsOpen(false);
         }, 3000);
       } else {
-        throw new Error("Registration failed");
+        throw new Error(result.message || "Registration failed");
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      alert("Bir hata oluştu. Lütfen tekrar deneyin.");
+      console.error("❌ Registration error:", error);
+      alert(error.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsSubmitting(false);
     }
@@ -114,12 +207,20 @@ export default function UserRegistrationModal() {
   const closeModal = () => {
     setIsOpen(false);
 
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    localStorage.setItem(
-      "registrationModalShown",
-      tomorrow.getTime().toString()
-    );
+    // Mobilde 12 saat, masaüstünde 24 saat sonra tekrar göster
+    const nextShow = new Date();
+    nextShow.setHours(nextShow.getHours() + (isMobile ? 12 : 24));
+
+    try {
+      if (typeof window !== "undefined" && window.localStorage) {
+        localStorage.setItem(
+          "registrationModalShown",
+          nextShow.getTime().toString()
+        );
+      }
+    } catch (error) {
+      console.log("Cannot set next show time");
+    }
   };
 
   return (
@@ -134,28 +235,49 @@ export default function UserRegistrationModal() {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black bg-opacity-25 backdrop-blur-sm" />
+          <div className="fixed inset-0  bg-opacity-5 backdrop-blur-sm" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
+          <div
+            className={`flex min-h-full ${
+              isMobile ? "items-end" : "items-center"
+            } justify-center ${isMobile ? "p-0" : "p-4"} text-center`}
+          >
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
+              enterFrom={`opacity-0 ${
+                isMobile ? "translate-y-full" : "scale-95"
+              }`}
+              enterTo={`opacity-100 ${
+                isMobile ? "translate-y-0" : "scale-100"
+              }`}
               leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+              leaveFrom={`opacity-100 ${
+                isMobile ? "translate-y-0" : "scale-100"
+              }`}
+              leaveTo={`opacity-0 ${
+                isMobile ? "translate-y-full" : "scale-95"
+              }`}
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-xl transition-all">
+              <Dialog.Panel
+                className={`w-full ${
+                  isMobile ? "max-w-none" : "max-w-md"
+                } transform overflow-hidden ${
+                  isMobile ? "rounded-t-2xl" : "rounded-2xl"
+                } bg-white shadow-xl transition-all ${
+                  isMobile ? "max-h-[90vh] overflow-y-auto" : ""
+                }`}
+              >
                 {!submitted ? (
                   <>
                     {/* Header */}
                     <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 text-white relative">
                       <button
                         onClick={closeModal}
-                        className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors"
+                        className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors p-1 rounded-full hover:bg-white/10"
+                        aria-label="Kapat"
                       >
                         <XMarkIcon className="h-5 w-5" />
                       </button>
@@ -165,25 +287,31 @@ export default function UserRegistrationModal() {
                           <GiftIcon className="h-6 w-6" />
                         </div>
                         <div className="text-left">
-                          <Dialog.Title className="text-lg font-semibold">
+                          <Dialog.Title
+                            className={`${
+                              isMobile ? "text-base" : "text-lg"
+                            } font-semibold`}
+                          >
                             Bildirimlerden Haberdar Olun 🎉
                           </Dialog.Title>
+                          <p className="text-sm text-white/90 mt-1">
+                            Size özel duyurular ve bildirimler
+                          </p>
                         </div>
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="px-6 py-6">
+                    <div className={`px-6 ${isMobile ? "py-4" : "py-6"}`}>
                       {/* Benefits */}
                       <div className="mb-6">
                         <div className="flex items-center space-x-3 text-sm text-gray-600 mb-2">
-                          <ClockIcon className="h-4 w-4 text-blue-500" />
+                          <ClockIcon className="h-4 w-4 text-blue-500 flex-shrink-0" />
                           <span>Sadece 30 saniye sürer</span>
                         </div>
-
                         <div className="flex items-center space-x-3 text-sm text-gray-600">
-                          <ShieldCheckIcon className="h-4 w-4 text-green-500" />
-                          <span>Bilgileriniz güvende</span>
+                          <ShieldCheckIcon className="h-4 w-4 text-green-500 flex-shrink-0" />
+                          <span>Bilgileriniz güvende tutulur</span>
                         </div>
                       </div>
 
@@ -199,7 +327,12 @@ export default function UserRegistrationModal() {
                             value={formData.phone}
                             onChange={handleInputChange}
                             placeholder="0555 123 45 67"
-                            className="w-full px-4 py-3 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                            className={`w-full ${
+                              isMobile
+                                ? "px-3 py-3 text-base"
+                                : "px-4 py-3 text-sm"
+                            } text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors`}
+                            style={{ fontSize: isMobile ? "16px" : "14px" }} // iOS zoom önleme
                             required
                           />
                         </div>
@@ -215,7 +348,12 @@ export default function UserRegistrationModal() {
                               value={formData.buildingNumber}
                               onChange={handleInputChange}
                               placeholder="A, B, C..."
-                              className="w-full px-4 py-3 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                              className={`w-full ${
+                                isMobile
+                                  ? "px-3 py-3 text-base"
+                                  : "px-4 py-3 text-sm"
+                              } text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors`}
+                              style={{ fontSize: isMobile ? "16px" : "14px" }}
                               required
                             />
                           </div>
@@ -229,7 +367,12 @@ export default function UserRegistrationModal() {
                               value={formData.apartmentNumber}
                               onChange={handleInputChange}
                               placeholder="12, 34..."
-                              className="w-full px-4 py-3 text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                              className={`w-full ${
+                                isMobile
+                                  ? "px-3 py-3 text-base"
+                                  : "px-4 py-3 text-sm"
+                              } text-black border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors`}
+                              style={{ fontSize: isMobile ? "16px" : "14px" }}
                               required
                             />
                           </div>
@@ -239,7 +382,9 @@ export default function UserRegistrationModal() {
                         <button
                           type="submit"
                           disabled={isSubmitting}
-                          className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                          className={`w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white ${
+                            isMobile ? "py-4" : "py-3"
+                          } px-4 rounded-lg font-medium hover:from-blue-600 hover:to-purple-700 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center`}
                         >
                           {isSubmitting ? (
                             <>
@@ -253,15 +398,17 @@ export default function UserRegistrationModal() {
                       </form>
 
                       {/* Privacy note */}
-                      <p className="text-xs text-gray-500 mt-4 text-center">
-                        Bilgileriniz güvenli şekilde saklanır. İstemediğiniz
-                        zaman çıkabilirsiniz.
+                      <p className="text-xs text-gray-500 mt-4 text-center leading-relaxed">
+                        🔒 Bilgileriniz güvenli şekilde saklanır ve asla üçüncü
+                        kişilerle paylaşılmaz.
                       </p>
                     </div>
                   </>
                 ) : (
                   // Success state
-                  <div className="px-6 py-8 text-center">
+                  <div
+                    className={`px-6 ${isMobile ? "py-6" : "py-8"} text-center`}
+                  >
                     <div className="bg-green-100 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                       <svg
                         className="w-8 h-8 text-green-500"
@@ -277,12 +424,16 @@ export default function UserRegistrationModal() {
                         />
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    <h3
+                      className={`${
+                        isMobile ? "text-lg" : "text-xl"
+                      } font-semibold text-gray-900 mb-2`}
+                    >
                       Teşekkürler! 🎉
                     </h3>
-                    <p className="text-gray-600">
-                      Bilgileriniz kaydedildi. Size özel bildirimleri yakında
-                      paylaşacağız!
+                    <p className="text-gray-600 leading-relaxed">
+                      Bilgileriniz başarıyla kaydedildi. Önemli bildirimleri
+                      yakında size ulaştıracağız!
                     </p>
                   </div>
                 )}
