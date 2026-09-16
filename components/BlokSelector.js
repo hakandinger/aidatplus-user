@@ -53,78 +53,16 @@ export default function BlokSelector({
                   {blokHarfi}
                 </span>
                 {isSelected && <span className="text-blue-500">✓</span>}
-              </div>
+              </div>             
 
-              {/* Daire Tipi */}
-              <div className="text-sm text-gray-600 mb-1">
-                {blokInfo.daireTipi || "Bilinmiyor"}
-              </div>
 
-              {/* Daire Sayısı */}
-              <div className="text-sm font-medium text-gray-700 mb-2">
-                {blokInfo.toplamDaireSayisi || 0} Daire
-              </div>
-
-              {/* Kazan Grubu */}
-              <div className="flex items-center justify-between">
-                <span
-                  className={`
-                  px-2 py-1 rounded-full text-xs font-medium
-                  ${getKazanColor(blokInfo.kazanGrubu)}
-                `}
-                >
-                  {getKazanInfo(blokInfo.kazanGrubu)}
-                </span>
-
-                {/* Metrekare */}
-                <span className="text-xs text-gray-500">
-                  {blokInfo.metrekare}m²
-                </span>
-              </div>
-
-              {/* Petek Bilgisi */}
-              <div className="mt-2 text-xs text-gray-400">
-                Petek: {blokInfo.petekOlcusu}cm
-              </div>
+             
             </button>
           );
         })}
       </div>
-
-      {/* Seçili Blok Özeti */}
-      {selectedBlok && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h3 className="font-medium text-gray-900 mb-2">
-            {selectedBlok} Blok Detayları
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <span className="text-gray-600">Daire Tipi:</span>
-              <p className="text-black font-medium">
-                {getBlokInfo(selectedBlok).daireTipi}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-600">Toplam Daire:</span>
-              <p className="text-black font-medium">
-                {getBlokInfo(selectedBlok).toplamDaireSayisi}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-600">Asansör Kullanan:</span>
-              <p className=" text-black font-medium">
-                {getBlokInfo(selectedBlok).asansorKullananDaireSayisi}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-600">Zemin Kat Daire:</span>
-              <p className=" text-black font-medium">
-                {getBlokInfo(selectedBlok).zeminKatDaireSayisi}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+     
+      
     </div>
   );
 }

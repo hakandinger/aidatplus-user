@@ -13,23 +13,51 @@ export const useAidat = (blokHarfi) => {
     setError("");
 
     try {
-      const response = await fetch("/api/aidat/hesaplamali-detay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ blokHarfi, period: getCurrentPeriod() }),
-      });
+      const period = getCurrentPeriod();
+
+      const response = await fetch(
+        "/api/aidat/hesaplamali-detay",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            blokHarfi,
+            period,
+          }),
+        }
+      );
 
       const result = await response.json();
 
-      if (result.success) setAidatVerisi(result.data);
-      else setError(result.message || "Aidat hesaplanamadı");
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || "Aidat bilgisi alınamadı"
+        );
+      }
+
+      setAidatVerisi(result.data);
+
     } catch (err) {
       console.error("Aidat hesaplama hatası:", err);
-      setError("Bu ay için henüz gider verisi girilmemiş");
+
+      setAidatVerisi(null);
+
+      setError(
+        err.message ||
+        "Bu ay için henüz gider verisi girilmemiş"
+      );
+
     } finally {
       setLoading(false);
     }
   }, [blokHarfi]);
 
-  return { aidatVerisi, loading, error, hesaplaAidat };
+  return {
+    aidatVerisi,
+    loading,
+    error,
+    hesaplaAidat,
+  };
 };

@@ -28,7 +28,7 @@ export default function UserRegistrationModal() {
           navigator.userAgent
         );
       setIsMobile(mobile);
-      console.log("📱 Is Mobile:", mobile);
+      
     };
 
     checkMobile();
@@ -54,7 +54,7 @@ export default function UserRegistrationModal() {
         }
         return false;
       } catch (error) {
-        console.log("LocalStorage not available");
+       
         return false;
       }
     };
@@ -65,12 +65,12 @@ export default function UserRegistrationModal() {
           localStorage.setItem("registrationModalShown", "true");
         }
       } catch (error) {
-        console.log("Cannot set localStorage");
+        
       }
     };
 
     if (checkModalShown()) {
-      console.log("📝 Modal already shown or not time yet");
+      
       return;
     }
 
@@ -88,13 +88,10 @@ export default function UserRegistrationModal() {
       const documentHeight = document.documentElement.scrollHeight;
 
       const scrollPercentage = scrolled / (documentHeight - windowHeight);
-      const threshold = isMobile ? 0.15 : 0.3; // Mobilde %15, masaüstünde %30
-
-      console.log("📜 Scroll %:", Math.round(scrollPercentage * 100));
+      const threshold = isMobile ? 0.15 : 0.3; // Mobilde %15, masaüstünde %30    
 
       if (scrollPercentage > threshold) {
-        scrollTriggered = true;
-        console.log("📜 Scroll triggered modal");
+        scrollTriggered = true;       
         setIsOpen(true);
         setModalShown();
         cleanup();
@@ -112,7 +109,7 @@ export default function UserRegistrationModal() {
 
       if (scrollPercentage > 0.15) {
         touchTriggered = true;
-        console.log("👆 Touch triggered modal");
+       
         setIsOpen(true);
         setModalShown();
         cleanup();
@@ -124,7 +121,7 @@ export default function UserRegistrationModal() {
       () => {
         if (!timeTriggered && !scrollTriggered && !touchTriggered) {
           timeTriggered = true;
-          console.log("⏰ Time triggered modal");
+          
           setIsOpen(true);
           setModalShown();
         }
