@@ -1,87 +1,323 @@
-// pages/index.js
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import BlokSelector from "../components/BlokSelector";
-import BlokOzetKarti from "../components/BlokOzetKarti";
-import GenelAciklamalarContainer from "@/components/GenelAciklamaContainer";
+import { useEffect, useState } from "react";
 
-import UserRegistrationModal from "../components/UserRegistrationModal";
+import AppLayout from "../components/layout/AppLayout";
+import BlokOzetKarti from "../components/dashboard/BlokOzetKarti";
 
-export default function Dashboard() {
-  const [selectedBlok, setSelectedBlok] = useState("A");
+export default function Home() {
   const [kompleksData, setKompleksData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Kompleks yapısını yükle
+  const [seciliBlok, setSeciliBlok] = useState("A");
+
+  const bloklar = ["A", "B", "C", "D", "E", "F"];
+
   useEffect(() => {
-    fetch("/api/kompleks/blok-listesi")
-      .then((res) => res.json())
-      .then((data) => {
-        setKompleksData(data);
+    const bloklariGetir = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(
+          "/api/kompleks/blok-listesi"
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(
+            result.message ||
+              "Kompleks bilgileri alınamadı"
+          );
+        }
+
+        setKompleksData(result);
+      } catch (error) {
+        console.error(
+          "Kompleks bilgileri alınamadı:",
+          error
+        );
+
+        setError(
+          error.message ||
+            "Kompleks bilgileri alınırken hata oluştu"
+        );
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Veri yükleme hatası:", err);
-        setLoading(false);
-      });
+      }
+    };
+
+    bloklariGetir();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Apartman verileri yükleniyor...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                🏢 Apartman Yönetim Sistemi
-              </h1>
-              <p className="text-gray-600">
-                178 Daire • 6 Blok • 2 Kazan Sistemi
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="text-right">
-                <p className="text-sm text-gray-500">Aktif Blok</p>
-                <p className="text-sm font-semibold text-blue-600">
-                  {selectedBlok} Blok
-                </p>
+    <AppLayout>
+      <div className="mx-auto max-w-7xl">
+
+        {/* =====================================================
+            SAYFA BAŞLIĞI
+        ===================================================== */}
+
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">
+            Dashboard
+          </h1>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Apartman yönetim ve aidat özeti
+          </p>
+        </div>
+
+
+        {/* =====================================================
+            YÜKLENİYOR
+        ===================================================== */}
+
+        {loading && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+            <div className="animate-pulse space-y-4">
+
+              <div className="h-5 w-32 rounded bg-gray-200" />
+
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+
+                {bloklar.map((blok) => (
+                  <div
+                    key={blok}
+                    className="h-16 rounded-xl bg-gray-100"
+                  />
+                ))}
+
               </div>
+
+              <div className="h-64 rounded-2xl bg-gray-100" />
+
             </div>
+
           </div>
-        </div>
+        )}
+
+
+        {/* =====================================================
+            HATA
+        ===================================================== */}
+
+        {!loading && error && (
+          <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+
+            <div className="flex gap-3">
+
+              <span className="text-xl">
+                ⚠️
+              </span>
+
+              <div>
+
+                <h2 className="font-semibold text-red-800">
+                  Bilgiler alınamadı
+                </h2>
+
+                <p className="mt-1 text-sm text-red-700">
+                  {error}
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+
+        {/* =====================================================
+            DASHBOARD
+        ===================================================== */}
+
+        {!loading &&
+          !error &&
+          kompleksData && (
+            <>
+
+              {/* =================================================
+                  KOMPLEKS ÖZETİ
+              ================================================= */}
+
+              <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+
+                  <p className="text-xs font-medium text-gray-500">
+                    Toplam Blok
+                  </p>
+
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+                    {
+                      kompleksData.istatistikler
+                        ?.toplamBlokSayisi ?? "-"
+                    }
+                  </p>
+
+                </div>
+
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+
+                  <p className="text-xs font-medium text-gray-500">
+                    Toplam Daire
+                  </p>
+
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+                    {
+                      kompleksData.istatistikler
+                        ?.toplamDaireSayisi ?? "-"
+                    }
+                  </p>
+
+                </div>
+
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+
+                  <p className="text-xs font-medium text-gray-500">
+                    Asansör Kullanan
+                  </p>
+
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+                    {
+                      kompleksData.istatistikler
+                        ?.toplamAsansorKullanan ?? "-"
+                    }
+                  </p>
+
+                </div>
+
+
+                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+
+                  <p className="text-xs font-medium text-gray-500">
+                    Toplam Alan
+                  </p>
+
+                  <p className="mt-2 text-2xl font-bold text-gray-900">
+
+                    {
+                      kompleksData.istatistikler
+                        ?.toplamMetrekare
+                        ? `${Number(
+                            kompleksData.istatistikler
+                              .toplamMetrekare
+                          ).toLocaleString("tr-TR")} m²`
+                        : "-"
+                    }
+
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              {/* =================================================
+                  BLOK SEÇİMİ
+              ================================================= */}
+
+              <div className="mb-6 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+
+                <div className="mb-3">
+
+                  <h2 className="text-sm font-semibold text-gray-800">
+                    Blok Seç
+                  </h2>
+
+                  <p className="mt-1 text-xs text-gray-500">
+                    Görüntülemek istediğiniz bloğu seçin.
+                  </p>
+
+                </div>
+
+
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+
+                  {bloklar.map((blok) => {
+
+                    const aktif =
+                      seciliBlok === blok;
+
+                    const blokInfo =
+                      kompleksData.bloklar?.find(
+                        (item) =>
+                          item.blokHarfi === blok
+                      );
+
+                    return (
+                      <button
+                        key={blok}
+                        type="button"
+                        onClick={() =>
+                          setSeciliBlok(blok)
+                        }
+                        className={`
+                          rounded-xl
+                          border
+                          px-3
+                          py-3
+                          text-center
+                          transition-all
+                          duration-200
+
+                          ${
+                            aktif
+                              ? "border-gray-900 bg-gray-900 text-white shadow-sm"
+                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                          }
+                        `}
+                      >
+
+                        <div className="text-lg font-bold">
+                          {blok}
+                        </div>
+
+                        <div
+                          className={`
+                            mt-1 text-[11px]
+
+                            ${
+                              aktif
+                                ? "text-gray-300"
+                                : "text-gray-400"
+                            }
+                          `}
+                        >
+                          {
+                            blokInfo?.toplamDaireSayisi ??
+                            "-"
+                          }{" "}
+                          daire
+                        </div>
+
+                      </button>
+                    );
+                  })}
+
+                </div>
+
+              </div>
+
+
+              {/* =================================================
+                  SEÇİLEN BLOK
+              ================================================= */}
+
+              <BlokOzetKarti
+                blokHarfi={seciliBlok}
+                kompleksData={kompleksData}
+              />
+
+            </>
+          )}
+
       </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Blok Seçici */}
-        <div className="mb-8">
-          <BlokSelector
-            selectedBlok={selectedBlok}
-            onBlokChange={setSelectedBlok}
-            kompleksData={kompleksData}
-          />
-        </div>
-
-        {/* Dashboard Cards */}
-        <div className=" gap-6 mb-8 ">
-          <BlokOzetKarti blokHarfi={selectedBlok} kompleksData={kompleksData} />
-        </div>
-
-        <GenelAciklamalarContainer />
-        <UserRegistrationModal />
-      </div>
-    </div>
+    </AppLayout>
   );
 }
