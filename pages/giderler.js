@@ -8,6 +8,7 @@ export default function Giderler() {
     const [veri, setVeri] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [seciliDonem, setSeciliDonem] = useState("TUMU");
 
     useEffect(() => {
         const getirGiderler = async () => {
@@ -102,13 +103,34 @@ export default function Giderler() {
         );
     }
 
-    const toplamGider = Number(veri?.toplamGider || 0);
-    const aylikGiderler = veri?.aylikGiderler || [];
-    const ekGiderler = veri?.ekGiderler || [];
+    const tumAylikGiderler = veri?.aylikGiderler || [];
+    const tumEkGiderler = veri?.ekGiderler || [];
+
+    const donemler = veri?.donemler || [];
+
+    const filtrelenmisAylikGiderler =
+        seciliDonem === "TUMU"
+            ? tumAylikGiderler
+            : tumAylikGiderler.filter(
+                (gider) => gider.period === seciliDonem
+            );
+
+    const filtrelenmisEkGiderler =
+        seciliDonem === "TUMU"
+            ? tumEkGiderler
+            : tumEkGiderler.filter(
+                (gider) => gider.period === seciliDonem
+            );
+
+    const toplamGider = filtrelenmisAylikGiderler.reduce(
+        (toplam, gider) =>
+            toplam + Number(gider.toplamGider || 0),
+        0
+    );
 
     const sonDonem =
-        aylikGiderler.length > 0
-            ? aylikGiderler[aylikGiderler.length - 1]
+        tumAylikGiderler.length > 0
+            ? tumAylikGiderler[tumAylikGiderler.length - 1]
             : null;
 
     const sonDonemGideri = Number(
@@ -119,7 +141,7 @@ export default function Giderler() {
 
     const buYil = new Date().getFullYear().toString();
 
-    const buYilToplam = aylikGiderler
+    const buYilToplam = tumAylikGiderler
         .filter((gider) => gider.period?.startsWith(buYil))
         .reduce(
             (toplam, gider) =>
@@ -141,12 +163,40 @@ export default function Giderler() {
                     </p>
                 </div>
 
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 className="text-lg font-semibold text-gray-900">
+                            Gider Dönemi
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-500">
+                            Görüntülemek istediğiniz dönemi seçin
+                        </p>
+                    </div>
+
+                    <select
+                        value={seciliDonem}
+                        onChange={(e) => setSeciliDonem(e.target.value)}
+                        className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none focus:border-gray-500"
+                    >
+                        <option value="TUMU">Tüm Zamanlar</option>
+
+                        {donemler
+                            .slice()
+                            .reverse()
+                            .map((donem) => (
+                                <option key={donem} value={donem}>
+                                    {donem}
+                                </option>
+                            ))}
+                    </select>
+                </div>
+
                 {/* Genel Özet */}
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <OzetKart
                         baslik="Tüm Zamanlar Toplam Gider"
                         deger={formatCurrency(toplamGider)}
-                        aciklama={`${aylikGiderler.length} dönem kayıtlı`}
+                        aciklama={`${tumAylikGiderler.length} dönem kayıtlı`}
                         buyuk
                     />
 
@@ -197,13 +247,13 @@ export default function Giderler() {
                         </p>
                     </div>
 
-                    {aylikGiderler.length === 0 ? (
+                    {filtrelenmisAylikGiderler.length === 0 ? (
                         <div className="p-8 text-center text-sm text-gray-500">
                             Henüz gider dönemi bulunmuyor.
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100">
-                            {aylikGiderler.map((gider) => (
+                            {filtrelenmisAylikGiderler.map((gider) => (
                                 <AylikGiderSatiri
                                     key={gider.period}
                                     gider={gider}
@@ -214,7 +264,7 @@ export default function Giderler() {
                 </section>
 
                 {/* Ek Giderler */}
-                <EkGiderler ekGiderler={ekGiderler} />
+                <EkGiderler ekGiderler={filtrelenmisEkGiderler} />
             </div>
         </AppLayout>
     );
