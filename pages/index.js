@@ -27,7 +27,7 @@ export default function Home() {
         if (!response.ok || !result.success) {
           throw new Error(
             result.message ||
-              "Kompleks bilgileri alınamadı"
+            "Kompleks bilgileri alınamadı"
           );
         }
 
@@ -40,7 +40,7 @@ export default function Home() {
 
         setError(
           error.message ||
-            "Kompleks bilgileri alınırken hata oluştu"
+          "Kompleks bilgileri alınırken hata oluştu"
         );
       } finally {
         setLoading(false);
@@ -60,12 +60,8 @@ export default function Home() {
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900">
-            Dashboard
+            Aidat ve Gider Özetleri
           </h1>
-
-          <p className="mt-1 text-sm text-gray-500">
-            Apartman yönetim ve aidat özeti
-          </p>
         </div>
 
 
@@ -139,83 +135,7 @@ export default function Home() {
           kompleksData && (
             <>
 
-              {/* =================================================
-                  KOMPLEKS ÖZETİ
-              ================================================= */}
 
-              <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-
-                  <p className="text-xs font-medium text-gray-500">
-                    Toplam Blok
-                  </p>
-
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {
-                      kompleksData.istatistikler
-                        ?.toplamBlokSayisi ?? "-"
-                    }
-                  </p>
-
-                </div>
-
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-
-                  <p className="text-xs font-medium text-gray-500">
-                    Toplam Daire
-                  </p>
-
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {
-                      kompleksData.istatistikler
-                        ?.toplamDaireSayisi ?? "-"
-                    }
-                  </p>
-
-                </div>
-
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-
-                  <p className="text-xs font-medium text-gray-500">
-                    Asansör Kullanan
-                  </p>
-
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-                    {
-                      kompleksData.istatistikler
-                        ?.toplamAsansorKullanan ?? "-"
-                    }
-                  </p>
-
-                </div>
-
-
-                <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-
-                  <p className="text-xs font-medium text-gray-500">
-                    Toplam Alan
-                  </p>
-
-                  <p className="mt-2 text-2xl font-bold text-gray-900">
-
-                    {
-                      kompleksData.istatistikler
-                        ?.toplamMetrekare
-                        ? `${Number(
-                            kompleksData.istatistikler
-                              .toplamMetrekare
-                          ).toLocaleString("tr-TR")} m²`
-                        : "-"
-                    }
-
-                  </p>
-
-                </div>
-
-              </div>
 
 
               {/* =================================================
@@ -266,10 +186,9 @@ export default function Home() {
                           transition-all
                           duration-200
 
-                          ${
-                            aktif
-                              ? "border-gray-900 bg-gray-900 text-white shadow-sm"
-                              : "border-gray-200 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
+                          ${aktif
+                            ? "border-gray-900 bg-gray-900 text-white shadow-sm"
+                            : "border-gray-200 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50"
                           }
                         `}
                       >
@@ -282,10 +201,9 @@ export default function Home() {
                           className={`
                             mt-1 text-[11px]
 
-                            ${
-                              aktif
-                                ? "text-gray-300"
-                                : "text-gray-400"
+                            ${aktif
+                              ? "text-gray-300"
+                              : "text-gray-400"
                             }
                           `}
                         >

@@ -206,7 +206,7 @@ export default async function handler(req, res) {
           paylamaYontemi:
             ekGider.payTipi || "Eşit Pay",
           dairePayiLabel: "Daire başı pay",
-          kategori: "ortak",
+          kategori: "ek-gider",
           aciklama: ekGider.aciklama || "",
         });
       });
@@ -226,6 +226,10 @@ export default async function handler(req, res) {
 
     const asansorGiderler = giderler.filter(
       (gider) => gider.kategori === "asansor"
+    );
+
+    const ekGiderler = giderler.filter(
+      (gider) => gider.kategori === "ek-gider"
     );
 
     // --------------------------------------------------
@@ -272,6 +276,7 @@ export default async function handler(req, res) {
           ortak: ortakGiderler,
           blok: blokGiderler,
           asansor: asansorGiderler,
+          ekGiderler: ekGiderler,
         },
 
         toplamGider,

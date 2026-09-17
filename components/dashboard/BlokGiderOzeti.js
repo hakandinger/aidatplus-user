@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   formatCurrency,
   getExpenseIcon,
@@ -18,6 +19,10 @@ export default function BlokGiderOzeti({
 
   const asansorGiderler = giderler.filter(
     (gider) => gider.kategori === "asansor"
+  );
+
+  const ekGiderler = giderler.filter(
+    (gider) => gider.kategori === "ek-gider"
   );
 
   return (
@@ -45,6 +50,10 @@ export default function BlokGiderOzeti({
         />
       )}
 
+      {ekGiderler.length > 0 && (
+        <EkGiderlerGrubu giderler={ekGiderler} />
+      )}
+
       {/* Blok / Kazan Giderleri */}
       {blokGiderler.length > 0 && (
         <GiderGrubu
@@ -67,7 +76,9 @@ export default function BlokGiderOzeti({
 
       {/* Genel Toplam */}
       <div className="rounded-2xl bg-gray-900 p-5 text-white shadow-sm">
-        <div className="flex items-center justify-between gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+          {/* Toplam Gider */}
           <div>
             <p className="text-sm text-gray-300">
               Toplam Gider
@@ -78,12 +89,29 @@ export default function BlokGiderOzeti({
             </p>
           </div>
 
-          <div className="text-3xl">
-            💰
+          {/* Daire Başı Toplam Pay */}
+          <div className="rounded-xl bg-emerald-500/20 p-4 sm:text-right">
+            <p className="text-sm font-medium text-emerald-200">
+              Daire Başı Toplam Pay
+            </p>
+
+            <p className="mt-1 text-2xl font-bold text-emerald-300">
+              {formatCurrency(
+                giderler.reduce(
+                  (toplam, gider) =>
+                    toplam + Number(gider.daireBasiPay || 0),
+                  0
+                )
+              )}
+            </p>
+
+            <p className="mt-1 text-xs text-emerald-200/80">
+              Bu dönem giderlerinin daire payı toplamı
+            </p>
           </div>
+
         </div>
       </div>
-
       {/* Bilgilendirme */}
       <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
         <p className="text-sm leading-6 text-blue-800">
@@ -142,7 +170,7 @@ function GiderSatiri({ gider }) {
   return (
     <div className="p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        
+
         {/* Gider Bilgisi */}
         <div className="flex min-w-0 items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-lg">
@@ -171,7 +199,7 @@ function GiderSatiri({ gider }) {
 
         {/* Tutar Bilgileri */}
         <div className="shrink-0 sm:text-right">
-          
+
           <p className="text-xs font-medium text-gray-500">
             Toplam Tutar
           </p>
@@ -191,5 +219,104 @@ function GiderSatiri({ gider }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function EkGiderlerGrubu({ giderler }) {
+  const [acik, setAcik] = useState(false);
+
+  const toplam = giderler.reduce(
+    (sum, gider) => sum + Number(gider.tutar || 0),
+    0
+  );
+
+  const toplamDairePayi = giderler.reduce(
+    (sum, gider) =>
+      sum + Number(gider.daireBasiPay || 0),
+    0
+  );
+
+  return (
+    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+      {/* Accordion Başlık */}
+      <button
+        type="button"
+        onClick={() => setAcik(!acik)}
+        className="w-full px-5 py-4 text-left transition hover:bg-gray-50"
+      >
+        <div className="flex items-center justify-between gap-4">
+
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-xl">
+              🧾
+            </div>
+
+            <div className="min-w-0">
+              <h3 className="font-semibold text-gray-900">
+                Ek Giderler
+              </h3>
+
+              <p className="mt-1 text-xs text-gray-500">
+                {giderler.length} gider kalemi ·{" "}
+                {formatCurrency(toplam)}
+              </p>
+            </div>
+          </div>
+
+          {/* Ok */}
+          <div
+            className={`shrink-0 text-gray-500 transition-transform ${acik ? "rotate-180" : ""
+              }`}
+          >
+            ▼
+          </div>
+        </div>
+
+        {/* Özet */}
+        <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs text-gray-500">
+          <span>
+            Toplam:{" "}
+            <strong className="text-gray-700">
+              {formatCurrency(toplam)}
+            </strong>
+          </span>
+
+          <span>
+            Daire başı:{" "}
+            <strong className="text-gray-700">
+              {formatCurrency(toplamDairePayi)}
+            </strong>
+          </span>
+        </div>
+      </button>
+
+      {/* Açılır İçerik */}
+      {acik && (
+        <div className="border-t border-gray-200">
+          <div className="divide-y divide-gray-100">
+            {giderler.map((gider, index) => (
+              <GiderSatiri
+                key={`${gider.key}-${index}`}
+                gider={gider}
+              />
+            ))}
+          </div>
+
+          {/* Alt Toplam */}
+          <div className="border-t border-gray-200 bg-gray-50 px-5 py-4">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-semibold text-gray-700">
+                Ek giderlerin daire başı toplamı
+              </span>
+
+              <span className="font-bold text-gray-900">
+                {formatCurrency(toplamDairePayi)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
